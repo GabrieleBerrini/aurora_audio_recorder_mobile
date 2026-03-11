@@ -253,14 +253,14 @@ knobElems.forEach(knob => {
     return Math.atan2(dy, dx) * (180 / Math.PI);
   }
 
-  knob.addEventListener("mousedown", (e) => {
+  /*knob.addEventListener("mousedown", (e) => {
     e.preventDefault(); // To prevent text selection while dragging ("preventDefault" unables the default browser behavior for the event)
     dragging = true;
 
     lastMouseAngle = mouseAngleDeg(e, knob);
 
     document.body.style.userSelect = "none";
-  });
+  });*/
 
   knob.addEventListener("touchstart", (e) => {
     const touch = e.touches[0]
@@ -272,17 +272,17 @@ knobElems.forEach(knob => {
     document.body.style.userSelect = "none";
   });
 
-  window.addEventListener("mouseup", () => {
+  /*window.addEventListener("mouseup", () => {
     dragging = false;
     document.body.style.userSelect = "";
-  });
+  });*/
 
   window.addEventListener("touchend", () => {
     dragging = false;
     document.body.style.userSelect = "";
   });
 
-  window.addEventListener("mousemove", (e) => {
+  /*window.addEventListener("mousemove", (e) => {
     if (!dragging) return;
 
     const currentMouseAngle = mouseAngleDeg(e, knob);
@@ -305,7 +305,7 @@ knobElems.forEach(knob => {
     value = v;
     updateParam(id, v);
     updateValLabel(id, v);
-  });
+  });*/
 
   window.addEventListener("touchmove", (e) => {
     if (!dragging) return;
