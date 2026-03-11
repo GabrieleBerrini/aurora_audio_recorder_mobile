@@ -240,7 +240,7 @@ knobElems.forEach(knob => {
     const cy = r.top + r.height / 2;
     const dx = clientX - cx;
     const dy = clientY - cy;
-  return Math.atan2(dy, dx) * (180 / Math.PI);
+    return Math.atan2(dy, dx) * (180 / Math.PI);
   }
 
   function startDrag(clientX, clientY) {
@@ -395,6 +395,7 @@ window.addEventListener("beforeunload", () => {
 btnStartRec.addEventListener("click", async () => { // async in order to be able to use await inside it
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true }); // Mic authorization
+    const options = { mimeType: "audio/mp4" }; // or "audio/aac" depending on the browser support (to check with MediaRecorder.isTypeSupported), "audio/webm" is more widely supported but it can cause issues with Safari and iOS, while mp4/aac is more compatible but less efficient in terms of compression
     mediaRecorder = new MediaRecorder(stream);
     recordedChunks = [];
 
@@ -423,7 +424,7 @@ btnStartRec.addEventListener("click", async () => { // async in order to be able
 
 btnStopRec.addEventListener("click", () => {
   mediaRecorder.onstop = () => {
-    audioBlob = new Blob(recordedChunks, { type: "audio/webm" });
+    audioBlob = new Blob(recordedChunks, { type: "audio/mp4" });
     if (audioUrl) URL.revokeObjectURL(audioUrl);
     audioUrl = URL.createObjectURL(audioBlob);
     player.src = audioUrl;
