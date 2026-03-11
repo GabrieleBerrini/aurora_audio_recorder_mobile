@@ -231,70 +231,35 @@ knobElems.forEach(knob => {
 
   knob.style.transform = `rotate(${angle}deg)`; // To let the knobs be in the right default position once the page is loaded
 
-  let startMouseAngle = 0;
-
-  // Function to get the mouse angle relative to the center of the knob
-  function mouseAngleDeg(ev, element) {
-    const r = element.getBoundingClientRect(); // To get dimensions and relative position of the element with respect to the viewport
-    const cx = r.left + r.width / 2;
-    const cy = r.top + r.height / 2;
-    const dx = ev.clientX - cx; // "clientX" and "clientY" give the mouse position relative to the viewport, so this two operations are useful to get the mouse position relative to the center of the knob
-    const dy = ev.clientY - cy;
-    return Math.atan2(dy, dx) * (180 / Math.PI);
-  }
+  let lastAngle = 0;
 
   // Function to get the touch angle relative to the center of the knob
-  function touchAngleDeg(ev, element) {
-    const r = element.getBoundingClientRect(); // To get dimensions and relative position of the element with respect to the viewport
+  function pointerAngleDeg(clientX, clientY, element) {
+    const r = element.getBoundingClientRect();
     const cx = r.left + r.width / 2;
     const cy = r.top + r.height / 2;
-    const dx = ev.touch.clientX - cx; // "clientX" and "clientY" give the mouse position relative to the viewport, so this two operations are useful to get the mouse position relative to the center of the knob
-    const dy = ev.touch.clientY - cy;
-    return Math.atan2(dy, dx) * (180 / Math.PI);
+    const dx = clientX - cx;
+    const dy = clientY - cy;
+  return Math.atan2(dy, dx) * (180 / Math.PI);
   }
 
-  /*knob.addEventListener("mousedown", (e) => {
-    e.preventDefault(); // To prevent text selection while dragging ("preventDefault" unables the default browser behavior for the event)
+  function startDrag(clientX, clientY) {
     dragging = true;
-
-    lastMouseAngle = mouseAngleDeg(e, knob);
-
+    lastAngle = pointerAngleDeg(clientX, clientY, knob);
     document.body.style.userSelect = "none";
-  });*/
+  }
 
-  knob.addEventListener("touchstart", (e) => {
-    const touch = e.touches[0]
-    e.preventDefault(); // To prevent text selection while dragging ("preventDefault" unables the default browser behavior for the event)
-    dragging = true;
-
-    lastMouseAngle = touchAngleDeg(e, knob);
-
-    document.body.style.userSelect = "none";
-  });
-
-  /*window.addEventListener("mouseup", () => {
-    dragging = false;
-    document.body.style.userSelect = "";
-  });*/
-
-  window.addEventListener("touchend", () => {
-    dragging = false;
-    document.body.style.userSelect = "";
-  });
-
-  /*window.addEventListener("mousemove", (e) => {
+  function moveDrag(clientX, clientY) {
     if (!dragging) return;
 
-    const currentMouseAngle = mouseAngleDeg(e, knob);
-    let delta = currentMouseAngle - lastMouseAngle;
+    const currentAngle = pointerAngleDeg(clientX, clientY, knob);
+    let delta = currentAngle - lastAngle;
 
     if (delta > 180) delta -= 360;
     if (delta < -180) delta += 360;
 
-    const speed = e.shiftKey ? 0.35 : 1.0;
-    angle = clamp(angle + delta * speed, -135, 135);
-
-    lastMouseAngle = currentMouseAngle;
+    angle = clamp(angle + delta, -135, 135);
+    lastAngle = currentAngle;
 
     knob.style.transform = `rotate(${angle}deg)`;
 
@@ -305,31 +270,28 @@ knobElems.forEach(knob => {
     value = v;
     updateParam(id, v);
     updateValLabel(id, v);
-  });*/
+  }
+
+  function endDrag() {
+    dragging = false;
+    document.body.style.userSelect = "";
+  }
+
+  knob.addEventListener("touchstart", (e) => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    startDrag(touch.clientX, touch.clientY);
+  });
 
   window.addEventListener("touchmove", (e) => {
     if (!dragging) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    moveDrag(touch.clientX, touch.clientY);
+  });
 
-    const currentMouseAngle = touchAngleDeg(e, knob);
-    let delta = currentMouseAngle - lastMouseAngle;
-
-    if (delta > 180) delta -= 360;
-    if (delta < -180) delta += 360;
-
-    const speed = e.shiftKey ? 0.35 : 1.0;
-    angle = clamp(angle + delta * speed, -135, 135);
-
-    lastMouseAngle = currentMouseAngle;
-
-    knob.style.transform = `rotate(${angle}deg)`;
-
-    const t = (angle + 135) / 270;
-    const raw = lerp(min, max, t);
-    const v = Math.round(raw / step) * step;
-
-    value = v;
-    updateParam(id, v);
-    updateValLabel(id, v);
+  window.addEventListener("touchend", () => {
+    endDrag();
   });
 
   updateValLabel(id, value);
