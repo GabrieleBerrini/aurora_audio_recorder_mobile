@@ -231,56 +231,106 @@ knobElems.forEach(knob => {
 
   knob.style.transform = `rotate(${angle}deg)`; // To let the knobs be in the right default position once the page is loaded
 
-let startMouseAngle = 0;
+  let startMouseAngle = 0;
 
-// Function to get the mouse angle relative to the center of the knob
-function mouseAngleDeg(ev, element) {
-  const r = element.getBoundingClientRect(); // To get dimensions and relative position of the element with respect to the viewport
-  const cx = r.left + r.width / 2;
-  const cy = r.top + r.height / 2;
-  const dx = ev.clientX - cx; // "clientX" and "clientY" give the mouse position relative to the viewport, so this two operations are useful to get the mouse position relative to the center of the knob
-  const dy = ev.clientY - cy;
-  return Math.atan2(dy, dx) * (180 / Math.PI);
-}
+  // Function to get the mouse angle relative to the center of the knob
+  function mouseAngleDeg(ev, element) {
+    const r = element.getBoundingClientRect(); // To get dimensions and relative position of the element with respect to the viewport
+    const cx = r.left + r.width / 2;
+    const cy = r.top + r.height / 2;
+    const dx = ev.clientX - cx; // "clientX" and "clientY" give the mouse position relative to the viewport, so this two operations are useful to get the mouse position relative to the center of the knob
+    const dy = ev.clientY - cy;
+    return Math.atan2(dy, dx) * (180 / Math.PI);
+  }
 
-knob.addEventListener("mousedown", (e) => {
-  e.preventDefault(); // To prevent text selection while dragging ("preventDefault" unables the default browser behavior for the event)
-  dragging = true;
+  // Function to get the touch angle relative to the center of the knob
+  function touchAngleDeg(ev, element) {
+    const r = element.getBoundingClientRect(); // To get dimensions and relative position of the element with respect to the viewport
+    const cx = r.left + r.width / 2;
+    const cy = r.top + r.height / 2;
+    const dx = ev.touch.clientX - cx; // "clientX" and "clientY" give the mouse position relative to the viewport, so this two operations are useful to get the mouse position relative to the center of the knob
+    const dy = ev.touch.clientY - cy;
+    return Math.atan2(dy, dx) * (180 / Math.PI);
+  }
 
-  lastMouseAngle = mouseAngleDeg(e, knob);
+  knob.addEventListener("mousedown", (e) => {
+    e.preventDefault(); // To prevent text selection while dragging ("preventDefault" unables the default browser behavior for the event)
+    dragging = true;
 
-  document.body.style.userSelect = "none";
-});
+    lastMouseAngle = mouseAngleDeg(e, knob);
 
-window.addEventListener("mouseup", () => {
-  dragging = false;
-  document.body.style.userSelect = "";
-});
+    document.body.style.userSelect = "none";
+  });
 
-window.addEventListener("mousemove", (e) => {
-  if (!dragging) return;
+  knob.addEventListener("touchstart", (e) => {
+    const touch = e.touches[0]
+    e.preventDefault(); // To prevent text selection while dragging ("preventDefault" unables the default browser behavior for the event)
+    dragging = true;
 
-  const currentMouseAngle = mouseAngleDeg(e, knob);
-  let delta = currentMouseAngle - lastMouseAngle;
+    lastMouseAngle = touchAngleDeg(e, knob);
 
-if (delta > 180) delta -= 360;
-if (delta < -180) delta += 360;
+    document.body.style.userSelect = "none";
+  });
 
-const speed = e.shiftKey ? 0.35 : 1.0;
-angle = clamp(angle + delta * speed, -135, 135);
+  window.addEventListener("mouseup", () => {
+    dragging = false;
+    document.body.style.userSelect = "";
+  });
 
-lastMouseAngle = currentMouseAngle;
+  window.addEventListener("touchend", () => {
+    dragging = false;
+    document.body.style.userSelect = "";
+  });
 
-  knob.style.transform = `rotate(${angle}deg)`;
+  window.addEventListener("mousemove", (e) => {
+    if (!dragging) return;
 
-  const t = (angle + 135) / 270;
-  const raw = lerp(min, max, t);
-  const v = Math.round(raw / step) * step;
+    const currentMouseAngle = mouseAngleDeg(e, knob);
+    let delta = currentMouseAngle - lastMouseAngle;
 
-  value = v;
-  updateParam(id, v);
-  updateValLabel(id, v);
-});
+    if (delta > 180) delta -= 360;
+    if (delta < -180) delta += 360;
+
+    const speed = e.shiftKey ? 0.35 : 1.0;
+    angle = clamp(angle + delta * speed, -135, 135);
+
+    lastMouseAngle = currentMouseAngle;
+
+    knob.style.transform = `rotate(${angle}deg)`;
+
+    const t = (angle + 135) / 270;
+    const raw = lerp(min, max, t);
+    const v = Math.round(raw / step) * step;
+
+    value = v;
+    updateParam(id, v);
+    updateValLabel(id, v);
+  });
+
+  window.addEventListener("touchmove", (e) => {
+    if (!dragging) return;
+
+    const currentMouseAngle = touchAngleDeg(e, knob);
+    let delta = currentMouseAngle - lastMouseAngle;
+
+    if (delta > 180) delta -= 360;
+    if (delta < -180) delta += 360;
+
+    const speed = e.shiftKey ? 0.35 : 1.0;
+    angle = clamp(angle + delta * speed, -135, 135);
+
+    lastMouseAngle = currentMouseAngle;
+
+    knob.style.transform = `rotate(${angle}deg)`;
+
+    const t = (angle + 135) / 270;
+    const raw = lerp(min, max, t);
+    const v = Math.round(raw / step) * step;
+
+    value = v;
+    updateParam(id, v);
+    updateValLabel(id, v);
+  });
 
   updateValLabel(id, value);
   updateParam(id, value);
